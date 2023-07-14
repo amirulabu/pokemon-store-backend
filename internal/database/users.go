@@ -14,6 +14,12 @@ type User struct {
 	HashedPassword string    `db:"hashed_password"`
 }
 
+type UserDisplay struct {
+	ID      int       `db:"id"`
+	Created time.Time `db:"created"`
+	Email   string    `db:"email"`
+}
+
 func (db *DB) InsertUser(email, hashedPassword string) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
@@ -75,4 +81,20 @@ func (db *DB) UpdateUserHashedPassword(id int, hashedPassword string) error {
 
 	_, err := db.ExecContext(ctx, query, hashedPassword, id)
 	return err
+}
+
+func (db *DB) GetAllUsers() ([]*UserDisplay, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	var users []*UserDisplay
+
+	query := `SELECT id, created, email FROM users ORDER BY id`
+
+	err := db.SelectContext(ctx, &users, query)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+
+	return users, err
 }
