@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type SinglePokemon struct {
@@ -292,6 +293,16 @@ func GetPokemons(offset int, limit int) (PokemonList, error) {
 	if err != nil {
 		return PokemonList{}, err
 	}
+
+	newResults := make([]Results, len(data.Results))
+
+	for i, element := range data.Results {
+		fmt.Println(element.URL)
+		newResults[i].Name = element.Name
+		newResults[i].URL = strings.Replace(element.URL, "https://pokeapi.co/api/v2/pokemon/", "https://pokemon-store.mirul.xyz/pokemon/", 1)
+	}
+
+	data.Results = newResults
 
 	return data, nil
 }
