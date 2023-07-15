@@ -72,9 +72,9 @@ func (app *application) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	input.Validator.CheckField(existingUser == nil, "Email", "Email is already in use")
 	input.Validator.CheckField(input.Email != "", "Email", "Email is required")
 	input.Validator.CheckField(validator.Matches(input.Email, validator.RgxEmail), "Email", "Must be a valid email address")
-	input.Validator.CheckField(existingUser == nil, "Email", "Email is already in use")
 
 	input.Validator.CheckField(input.Password != "", "Password", "Password is required")
 	input.Validator.CheckField(len(input.Password) >= 8, "Password", "Password is too short")
@@ -165,6 +165,60 @@ func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http
 	if err != nil {
 		app.serverError(w, r, err)
 	}
+}
+
+func (app *application) changePassword(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		CurrentPassword string `json:"CurrentPassword"`
+		NewPassword     string `json:"NewPassword"`
+		Validator       validator.Validator
+	}
+
+	err := request.DecodeJSON(w, r, &input)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	currentUser := contextGetAuthenticatedUser(r)
+
+	input.Validator.CheckField(input.CurrentPassword != "", "CurrentPassword", "Current Password is required")
+	input.Validator.CheckField(input.NewPassword != "", "NewPassword", "New Password is required")
+	input.Validator.CheckField(len(input.NewPassword) >= 8, "NewPassword", "New Password is too short")
+	input.Validator.CheckField(len(input.NewPassword) <= 72, "NewPassword", "New Password is too long")
+	input.Validator.CheckField(validator.NotIn(input.NewPassword, password.CommonPasswords...), "NewPassword", "New Password is too common")
+
+	if input.Validator.HasErrors() {
+		app.failedValidation(w, r, input.Validator)
+		return
+	}
+
+	passwordMatches, err := password.Matches(input.CurrentPassword, currentUser.HashedPassword)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	input.Validator.CheckField(passwordMatches, "CurrentPassword", "Current Password is incorrect")
+
+	if input.Validator.HasErrors() {
+		app.failedValidation(w, r, input.Validator)
+		return
+	}
+
+	hashedPassword, err := password.Hash(input.NewPassword)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	err = app.db.UpdateUserHashedPassword(currentUser.ID, hashedPassword)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (app *application) protected(w http.ResponseWriter, r *http.Request) {

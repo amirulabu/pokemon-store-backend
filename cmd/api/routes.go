@@ -25,6 +25,7 @@ func (app *application) routes() http.Handler {
 		mux.Use(app.requireAuthenticatedUser)
 
 		mux.HandleFunc("/protected", app.protected, "GET")
+		mux.HandleFunc("/change-password", app.changePassword, "POST")
 
 		mux.Group(func(mux *flow.Mux) {
 			mux.Use(app.requireAdminUser)

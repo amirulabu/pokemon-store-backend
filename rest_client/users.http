@@ -27,6 +27,18 @@ content-type: application/json
 
 # @name protected
 GET {{url}}/protected HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+
+@token = {{authenticationTokens.response.body.AuthenticationToken}}
+
+# @name change-password
+POST {{url}}/change-password HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{token}}
-```
+
+{
+    "currentpassword": "Test12345",
+    "newpassword": "Test1234"
+}
