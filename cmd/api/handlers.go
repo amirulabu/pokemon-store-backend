@@ -5,7 +5,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/alexedwards/flow"
 	"github.com/amirulabu/pokemon-store-backend/internal/password"
+	"github.com/amirulabu/pokemon-store-backend/internal/pokemon"
 	"github.com/amirulabu/pokemon-store-backend/internal/request"
 	"github.com/amirulabu/pokemon-store-backend/internal/response"
 	"github.com/amirulabu/pokemon-store-backend/internal/validator"
@@ -21,6 +23,33 @@ func (app *application) status(w http.ResponseWriter, r *http.Request) {
 	err := response.JSON(w, http.StatusOK, data)
 	if err != nil {
 		app.serverError(w, r, err)
+	}
+}
+
+func (app *application) getPokemons(w http.ResponseWriter, r *http.Request) {
+
+	data, err := pokemon.GetPokemons(0, 20)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+
+	resErr := response.JSON(w, http.StatusOK, data)
+	if resErr != nil {
+		app.serverError(w, r, resErr)
+	}
+}
+
+func (app *application) getPokemonByNameOrId(w http.ResponseWriter, r *http.Request) {
+	name := flow.Param(r.Context(), "nameOrId")
+
+	data, err := pokemon.GetSinglePokemon(name)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+
+	resErr := response.JSON(w, http.StatusOK, data)
+	if resErr != nil {
+		app.serverError(w, r, resErr)
 	}
 }
 
@@ -140,4 +169,17 @@ func (app *application) createAuthenticationToken(w http.ResponseWriter, r *http
 
 func (app *application) protected(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("This is a protected handler"))
+}
+
+func (app *application) getAllUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := app.db.GetAllUsers()
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	err = response.JSON(w, http.StatusOK, users)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 }

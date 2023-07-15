@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/exp/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"golang.org/x/exp/slog"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 
 func (app *application) serveHTTP() error {
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.config.httpPort),
+		Addr:         fmt.Sprintf("localhost:%d", app.config.httpPort),
 		Handler:      app.routes(),
 		ErrorLog:     slog.NewLogLogger(app.logger.Handler(), slog.LevelWarn),
 		IdleTimeout:  defaultIdleTimeout,

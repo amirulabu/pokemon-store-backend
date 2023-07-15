@@ -119,3 +119,16 @@ func (app *application) requireBasicAuthentication(next http.Handler) http.Handl
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (app *application) requireAdminUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authenticatedUser := contextGetAuthenticatedUser(r)
+
+		if authenticatedUser.ID != 1 {
+			app.adminRequired(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}

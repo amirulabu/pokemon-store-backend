@@ -18,11 +18,19 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("/status", app.status, "GET")
 	mux.HandleFunc("/users", app.createUser, "POST")
 	mux.HandleFunc("/authentication-tokens", app.createAuthenticationToken, "POST")
+	mux.HandleFunc("/pokemon/:nameOrId", app.getPokemonByNameOrId, "GET")
+	mux.HandleFunc("/pokemon", app.getPokemons, "GET")
 
 	mux.Group(func(mux *flow.Mux) {
 		mux.Use(app.requireAuthenticatedUser)
 
 		mux.HandleFunc("/protected", app.protected, "GET")
+
+		mux.Group(func(mux *flow.Mux) {
+			mux.Use(app.requireAdminUser)
+
+			mux.HandleFunc("/admin/users", app.getAllUsers, "GET")
+		})
 	})
 
 	mux.Group(func(mux *flow.Mux) {

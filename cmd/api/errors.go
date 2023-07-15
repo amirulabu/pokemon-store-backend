@@ -87,6 +87,10 @@ func (app *application) authenticationRequired(w http.ResponseWriter, r *http.Re
 	app.errorMessage(w, r, http.StatusUnauthorized, "You must be authenticated to access this resource", nil)
 }
 
+func (app *application) adminRequired(w http.ResponseWriter, r *http.Request) {
+	app.errorMessage(w, r, http.StatusUnauthorized, "You must be authenticated as admin to access this resource", nil)
+}
+
 func (app *application) basicAuthenticationRequired(w http.ResponseWriter, r *http.Request) {
 	headers := make(http.Header)
 	headers.Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
