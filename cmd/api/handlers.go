@@ -237,3 +237,42 @@ func (app *application) getAllUsers(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 	}
 }
+
+func (app *application) changePasswordById(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		UserId      int    `json:"UserId"`
+		NewPassword string `json:"NewPassword"`
+		Validator   validator.Validator
+	}
+
+	err := request.DecodeJSON(w, r, &input)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	input.Validator.CheckField(input.UserId != 0, "UserId", "UserId is required")
+	input.Validator.CheckField(input.NewPassword != "", "NewPassword", "New Password is required")
+	input.Validator.CheckField(len(input.NewPassword) >= 8, "NewPassword", "New Password is too short")
+	input.Validator.CheckField(len(input.NewPassword) <= 72, "NewPassword", "New Password is too long")
+	input.Validator.CheckField(validator.NotIn(input.NewPassword, password.CommonPasswords...), "NewPassword", "New Password is too common")
+
+	if input.Validator.HasErrors() {
+		app.failedValidation(w, r, input.Validator)
+		return
+	}
+
+	hashedPassword, err := password.Hash(input.NewPassword)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	err = app.db.UpdateUserHashedPassword(input.UserId, hashedPassword)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

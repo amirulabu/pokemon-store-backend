@@ -1,14 +1,13 @@
 
 @url = http://localhost:4444
 
-```http
 
 # @name authenticationTokens
 POST {{url}}/authentication-tokens HTTP/1.1
 content-type: application/json
 
 {
-    "email": "amirulabu@gmail.com",
+    "email": "test@example.com",
     "password": "Test1234"
 }
 
@@ -20,4 +19,15 @@ content-type: application/json
 GET {{url}}/admin/users HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{token}}
-```
+
+###
+
+POST {{url}}/admin/change-user-password HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "userid": 1,
+    "newpassword": "Test1234"
+}
+

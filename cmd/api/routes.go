@@ -31,6 +31,7 @@ func (app *application) routes() http.Handler {
 			mux.Use(app.requireAdminUser)
 
 			mux.HandleFunc("/admin/users", app.getAllUsers, "GET")
+			mux.HandleFunc("/admin/change-user-password", app.changePasswordById, "POST")
 		})
 	})
 
