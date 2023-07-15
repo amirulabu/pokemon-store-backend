@@ -15,7 +15,7 @@ jobs:
       - uses: wangyoucao577/go-release-action@v1
         with:
           github_token: ${{ secrets.GH_TOKEN }}
-          binary_name: pokemon-store-backend-${{github.ref}}-linux-amd64
+          binary_name: pokemon-store-backend-${{github.ref_name}}-linux-amd64
           project_path: ./cmd/api
           goos: linux
           goarch: amd64
