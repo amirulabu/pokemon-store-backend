@@ -15,19 +15,19 @@ jobs:
       - uses: wangyoucao577/go-release-action@v1
         with:
           github_token: ${{ secrets.GH_TOKEN }}
-          binary_name: ${{github.event.repository.name}}-${{github.ref}}-linux-amd64
+          binary_name: pokemon-store-backend-${{github.ref}}-linux-amd64
           project_path: ./cmd/api
           goos: linux
           goarch: amd64
-  release-darwin-arm64:
-    name: release linux/amd64
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: wangyoucao577/go-release-action@v1
-        with:
-          github_token: ${{ secrets.GH_TOKEN }}
-          binary_name: ${{github.event.repository.name}}-${{github.ref}}-darwin-arm64
-          project_path: ./cmd/api
-          goos: darwin
-          goarch: arm64
+  # release-darwin-arm64:
+  #   name: release darwin/arm64
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: wangyoucao577/go-release-action@v1
+  #       with:
+  #         github_token: ${{ secrets.GH_TOKEN }}
+  #         binary_name: ${{github.event.repository.name}}-${{github.ref}}-darwin-arm64
+  #         project_path: ./cmd/api
+  #         goos: darwin
+  #         goarch: arm64
