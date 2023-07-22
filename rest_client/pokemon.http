@@ -1,0 +1,19 @@
+
+@url = http://localhost:4444
+
+
+GET {{url}}/pokemon HTTP/1.1
+
+###
+
+GET {{url}}/pokemon/2/ HTTP/1.1
+# this will give error
+
+###
+
+GET {{url}}/pokemon/2 HTTP/1.1
+
+###
+GET {{url}}/pokemon?offset=20&limit=50 HTTP/1.1
+
+###

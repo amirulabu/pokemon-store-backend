@@ -10,6 +10,7 @@ import (
 	"github.com/amirulabu/pokemon-store-backend/internal/pokemon"
 	"github.com/amirulabu/pokemon-store-backend/internal/request"
 	"github.com/amirulabu/pokemon-store-backend/internal/response"
+	"github.com/amirulabu/pokemon-store-backend/internal/utils"
 	"github.com/amirulabu/pokemon-store-backend/internal/validator"
 
 	"github.com/pascaldekloe/jwt"
@@ -26,9 +27,20 @@ func (app *application) status(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) getPokemons(w http.ResponseWriter, r *http.Request) {
+func getURLQueryParamInt(r *http.Request, key string, defaultValue int) int {
+	value := r.URL.Query().Get(key)
+	if value == "" {
+		return defaultValue
+	}
 
-	data, err := pokemon.GetPokemons(0, 20)
+	return utils.GetInt(value, defaultValue)
+}
+
+func (app *application) getPokemons(w http.ResponseWriter, r *http.Request) {
+	limit := getURLQueryParamInt(r, "limit", 20)
+	offset := getURLQueryParamInt(r, "offset", 0)
+
+	data, err := pokemon.GetPokemons(offset, limit)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
