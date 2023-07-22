@@ -275,8 +275,8 @@ type Results struct {
 
 type PokemonList struct {
 	Count    int         `json:"count"`
-	Next     string      `json:"next"`
-	Previous interface{} `json:"previous"`
+	Next     interface{} `json:"next"`     // can be string or null
+	Previous interface{} `json:"previous"` // can be string or null
 	Results  []Results   `json:"results"`
 }
 
@@ -299,7 +299,12 @@ func GetPokemons(offset int, limit int) (PokemonList, error) {
 	}
 
 	newResults := make([]Results, len(data.Results))
-	data.Next = replacePokeAPIURLWithStoreUrl(data.Next)
+	if data.Next != nil {
+		data.Next = replacePokeAPIURLWithStoreUrl(data.Next.(string))
+	}
+	if data.Previous != nil {
+		data.Previous = replacePokeAPIURLWithStoreUrl(data.Previous.(string))
+	}
 	for i, element := range data.Results {
 		newResults[i].Name = element.Name
 		newResults[i].URL = replacePokeAPIURLWithStoreUrl(element.URL)
