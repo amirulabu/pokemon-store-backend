@@ -288,3 +288,25 @@ func (app *application) changePasswordById(w http.ResponseWriter, r *http.Reques
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
+	data := map[string]string{
+		"Title": "Home",
+	}
+
+	err := response.Page(w, http.StatusOK, data, "pages/index.go.html")
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+}
+
+func (app *application) another(w http.ResponseWriter, r *http.Request) {
+	data := map[string]string{
+		"Title": "Another",
+	}
+
+	err := response.Page(w, http.StatusOK, data, "pages/another.go.html")
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+}

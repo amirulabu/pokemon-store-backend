@@ -282,7 +282,6 @@ type PokemonList struct {
 
 func replacePokeAPIURLWithStoreUrl(url string, baseUrl string) string {
 	newUrl := baseUrl + "/pokemon" // fmt.Sprintf("%s/pokemon", baseUrl)
-	fmt.Println(newUrl)
 	return strings.Replace(url, "https://pokeapi.co/api/v2/pokemon", newUrl, 1)
 }
 

@@ -15,6 +15,10 @@ func (app *application) routes() http.Handler {
 	mux.Use(app.recoverPanic)
 	mux.Use(app.authenticate)
 
+	mux.HandleFunc("/", app.home, "GET")
+
+	mux.HandleFunc("/another", app.another, "GET")
+
 	mux.HandleFunc("/status", app.status, "GET")
 	mux.HandleFunc("/users", app.createUser, "POST")
 	mux.HandleFunc("/authentication-tokens", app.createAuthenticationToken, "POST")
