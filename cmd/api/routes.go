@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/MadAppGang/httplog"
 	"github.com/alexedwards/flow"
 )
 
@@ -14,6 +15,7 @@ func (app *application) routes() http.Handler {
 
 	mux.Use(app.recoverPanic)
 	mux.Use(app.authenticate)
+	mux.Use(httplog.LoggerWithName("Pokemon"))
 
 	mux.HandleFunc("/", app.home, "GET")
 
