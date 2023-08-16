@@ -280,11 +280,13 @@ type PokemonList struct {
 	Results  []Results   `json:"results"`
 }
 
-func replacePokeAPIURLWithStoreUrl(url string) string {
-	return strings.Replace(url, "https://pokeapi.co/api/v2/pokemon", "https://pokemon-store.mirul.xyz/pokemon", 1)
+func replacePokeAPIURLWithStoreUrl(url string, baseUrl string) string {
+	newUrl := baseUrl + "/pokemon" // fmt.Sprintf("%s/pokemon", baseUrl)
+	fmt.Println(newUrl)
+	return strings.Replace(url, "https://pokeapi.co/api/v2/pokemon", newUrl, 1)
 }
 
-func GetPokemons(offset int, limit int) (PokemonList, error) {
+func GetPokemons(offset int, limit int, baseUrl string) (PokemonList, error) {
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon?offset=%d&limit=%d", offset, limit)
 	res, err := http.Get(url)
 	if err != nil {
@@ -300,14 +302,14 @@ func GetPokemons(offset int, limit int) (PokemonList, error) {
 
 	newResults := make([]Results, len(data.Results))
 	if data.Next != nil {
-		data.Next = replacePokeAPIURLWithStoreUrl(data.Next.(string))
+		data.Next = replacePokeAPIURLWithStoreUrl(data.Next.(string), baseUrl)
 	}
 	if data.Previous != nil {
-		data.Previous = replacePokeAPIURLWithStoreUrl(data.Previous.(string))
+		data.Previous = replacePokeAPIURLWithStoreUrl(data.Previous.(string), baseUrl)
 	}
 	for i, element := range data.Results {
 		newResults[i].Name = element.Name
-		newResults[i].URL = replacePokeAPIURLWithStoreUrl(element.URL)
+		newResults[i].URL = replacePokeAPIURLWithStoreUrl(element.URL, baseUrl)
 	}
 
 	data.Results = newResults

@@ -40,7 +40,7 @@ func (app *application) getPokemons(w http.ResponseWriter, r *http.Request) {
 	limit := getURLQueryParamInt(r, "limit", 20)
 	offset := getURLQueryParamInt(r, "offset", 0)
 
-	data, err := pokemon.GetPokemons(offset, limit)
+	data, err := pokemon.GetPokemons(offset, limit, app.config.baseURL)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
