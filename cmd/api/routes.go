@@ -10,6 +10,8 @@ import (
 )
 
 func (app *application) routes() http.Handler {
+	z, _ := zap.NewDevelopment()
+	defer z.Sync() // flushes buffer, if any
 
 	mux := flow.New()
 
@@ -20,21 +22,16 @@ func (app *application) routes() http.Handler {
 	mux.Use(app.authenticate)
 	if app.config.env == "development" {
 		mux.Use(httplog.LoggerWithFormatter(
-			httplog.DefaultLogFormatter,
+			httplog.DefaultLogFormatterWithRequestHeader,
 			// for debugging
 			// httplog.DefaultLogFormatterWithRequestHeadersAndBody,
 		))
 	}
 
 	if app.config.env != "development" {
-		z, _ := zap.NewDevelopment()
-		defer z.Sync() // flushes buffer, if any
-
-		logger := httplog.LoggerWithConfig(httplog.LoggerConfig{
-			Formatter: lzap.DefaultZapLogger(z, zap.InfoLevel, ""),
-		})
-
-		mux.Use(logger)
+		mux.Use(httplog.LoggerWithConfig(httplog.LoggerConfig{
+			Formatter: lzap.ZapLogger(z, zap.InfoLevel, ""),
+		}))
 	}
 
 	mux.HandleFunc("/", app.home, "GET")
