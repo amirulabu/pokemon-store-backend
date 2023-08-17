@@ -28,6 +28,7 @@ func main() {
 }
 
 type config struct {
+	env       string
 	baseURL   string
 	httpPort  int
 	basicAuth struct {
@@ -67,6 +68,7 @@ type application struct {
 func run(logger *slog.Logger) error {
 	var cfg config
 
+	cfg.env = env.GetString("ENV", "development")
 	cfg.baseURL = env.GetString("BASE_URL", "http://localhost:4444")
 	cfg.httpPort = env.GetInt("HTTP_PORT", 4444)
 	cfg.basicAuth.username = env.GetString("BASIC_AUTH_USERNAME", "admin")

@@ -4,10 +4,13 @@ import (
 	"net/http"
 
 	"github.com/MadAppGang/httplog"
+	lzap "github.com/MadAppGang/httplog/zap"
 	"github.com/alexedwards/flow"
+	"go.uber.org/zap"
 )
 
 func (app *application) routes() http.Handler {
+
 	mux := flow.New()
 
 	mux.NotFound = http.HandlerFunc(app.notFound)
@@ -15,7 +18,24 @@ func (app *application) routes() http.Handler {
 
 	mux.Use(app.recoverPanic)
 	mux.Use(app.authenticate)
-	mux.Use(httplog.LoggerWithName("Pokemon"))
+	if app.config.env == "development" {
+		mux.Use(httplog.LoggerWithFormatter(
+			httplog.DefaultLogFormatter,
+			// for debugging
+			// httplog.DefaultLogFormatterWithRequestHeadersAndBody,
+		))
+	}
+
+	if app.config.env != "development" {
+		z, _ := zap.NewDevelopment()
+		defer z.Sync() // flushes buffer, if any
+
+		logger := httplog.LoggerWithConfig(httplog.LoggerConfig{
+			Formatter: lzap.DefaultZapLogger(z, zap.InfoLevel, ""),
+		})
+
+		mux.Use(logger)
+	}
 
 	mux.HandleFunc("/", app.home, "GET")
 
