@@ -31,3 +31,7 @@ Authorization: Bearer {{token}}
     "newpassword": "Test1234"
 }
 
+###
+
+GET {{url}}/admin/protected HTTP/1.1
+Authorization: Bearer {{token}}

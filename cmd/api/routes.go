@@ -3,10 +3,16 @@ package main
 import (
 	"net/http"
 
+	"github.com/MadAppGang/httplog"
+	lzap "github.com/MadAppGang/httplog/zap"
 	"github.com/alexedwards/flow"
+	"go.uber.org/zap"
 )
 
 func (app *application) routes() http.Handler {
+	z, _ := zap.NewDevelopment()
+	defer z.Sync() // flushes buffer, if any
+
 	mux := flow.New()
 
 	mux.NotFound = http.HandlerFunc(app.notFound)
@@ -14,11 +20,28 @@ func (app *application) routes() http.Handler {
 
 	mux.Use(app.recoverPanic)
 	mux.Use(app.authenticate)
+	if app.config.env == "development" {
+		mux.Use(httplog.LoggerWithFormatter(
+			httplog.DefaultLogFormatterWithRequestHeader,
+			// for debugging
+			// httplog.DefaultLogFormatterWithRequestHeadersAndBody,
+		))
+	}
+
+	if app.config.env != "development" {
+		mux.Use(httplog.LoggerWithConfig(httplog.LoggerConfig{
+			Formatter: lzap.ZapLogger(z, zap.InfoLevel, ""),
+		}))
+	}
+
+	mux.HandleFunc("/", app.home, "GET")
+
+	mux.HandleFunc("/another", app.another, "GET")
 
 	mux.HandleFunc("/status", app.status, "GET")
 	mux.HandleFunc("/users", app.createUser, "POST")
 	mux.HandleFunc("/authentication-tokens", app.createAuthenticationToken, "POST")
-	mux.HandleFunc("/pokemon/:nameOrId/", app.getPokemonByNameOrId, "GET")
+	mux.HandleFunc("/pokemon/:nameOrId", app.getPokemonByNameOrId, "GET")
 	mux.HandleFunc("/pokemon", app.getPokemons, "GET")
 
 	mux.Group(func(mux *flow.Mux) {
@@ -30,6 +53,7 @@ func (app *application) routes() http.Handler {
 		mux.Group(func(mux *flow.Mux) {
 			mux.Use(app.requireAdminUser)
 
+			mux.HandleFunc("/admin/protected", app.protected, "GET")
 			mux.HandleFunc("/admin/users", app.getAllUsers, "GET")
 			mux.HandleFunc("/admin/change-user-password", app.changePasswordById, "POST")
 		})
