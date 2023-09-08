@@ -31,6 +31,17 @@ func New(dsn string, automigrate bool) (*DB, error) {
 	db.SetConnMaxIdleTime(5 * time.Minute)
 	db.SetConnMaxLifetime(2 * time.Hour)
 
+	// https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
+	_, err = db.Exec(`
+		pragma journal_mode = WAL;
+		pragma synchronous = normal;
+		pragma temp_store = memory;
+		pragma mmap_size = 30000000000;`)
+
+	if err != nil {
+		return nil, err
+	}
+
 	if automigrate {
 		iofsDriver, err := iofs.New(assets.EmbeddedFiles, "migrations")
 		if err != nil {

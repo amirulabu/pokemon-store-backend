@@ -3,8 +3,11 @@ package pokemon
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"regexp"
 	"strings"
+
+	"github.com/amirulabu/pokemon-store-backend/internal/cached_http"
+	"github.com/amirulabu/pokemon-store-backend/internal/database"
 )
 
 type SinglePokemon struct {
@@ -251,16 +254,16 @@ type SinglePokemon struct {
 	Weight int `json:"weight"`
 }
 
-func GetSinglePokemon(nameOrId string) (SinglePokemon, error) {
+func GetSinglePokemon(nameOrId string, db *database.DB) (SinglePokemon, error) {
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", nameOrId)
 
-	res, err := http.Get(url)
+	res, err := cached_http.CacheAndRetrieve(url, db)
 	if err != nil {
 		return SinglePokemon{}, err
 	}
 
 	var data SinglePokemon
-	err = json.NewDecoder(res.Body).Decode(&data)
+	err = json.Unmarshal(res, &data)
 	if err != nil {
 		return SinglePokemon{}, err
 	}
@@ -282,19 +285,23 @@ type PokemonList struct {
 
 func replacePokeAPIURLWithStoreUrl(url string, baseUrl string) string {
 	newUrl := baseUrl + "/pokemon" // fmt.Sprintf("%s/pokemon", baseUrl)
-	return strings.Replace(url, "https://pokeapi.co/api/v2/pokemon", newUrl, 1)
+	result := strings.Replace(url, "https://pokeapi.co/api/v2/pokemon", newUrl, 1)
+	re := regexp.MustCompile(`\/$`)
+	result = re.ReplaceAllString(result, "")
+	return result
 }
 
-func GetPokemons(offset int, limit int, baseUrl string) (PokemonList, error) {
+func GetPokemons(offset int, limit int, baseUrl string, db *database.DB) (PokemonList, error) {
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon?offset=%d&limit=%d", offset, limit)
-	res, err := http.Get(url)
+	res, err := cached_http.CacheAndRetrieve(url, db)
+
 	if err != nil {
 		return PokemonList{}, err
 	}
 
 	var data PokemonList
 
-	err = json.NewDecoder(res.Body).Decode(&data)
+	err = json.Unmarshal(res, &data)
 	if err != nil {
 		return PokemonList{}, err
 	}
