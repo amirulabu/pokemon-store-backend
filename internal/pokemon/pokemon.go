@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -282,7 +283,10 @@ type PokemonList struct {
 
 func replacePokeAPIURLWithStoreUrl(url string, baseUrl string) string {
 	newUrl := baseUrl + "/pokemon" // fmt.Sprintf("%s/pokemon", baseUrl)
-	return strings.Replace(url, "https://pokeapi.co/api/v2/pokemon", newUrl, 1)
+	result := strings.Replace(url, "https://pokeapi.co/api/v2/pokemon", newUrl, 1)
+	re := regexp.MustCompile(`\/$`)
+	result = re.ReplaceAllString(result, "")
+	return result
 }
 
 func GetPokemons(offset int, limit int, baseUrl string) (PokemonList, error) {
