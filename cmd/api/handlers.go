@@ -40,7 +40,7 @@ func (app *application) getPokemons(w http.ResponseWriter, r *http.Request) {
 	limit := getURLQueryParamInt(r, "limit", 20)
 	offset := getURLQueryParamInt(r, "offset", 0)
 
-	data, err := pokemon.GetPokemons(offset, limit, app.config.baseURL)
+	data, err := pokemon.GetPokemons(offset, limit, app.config.baseURL, app.db)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
@@ -54,7 +54,7 @@ func (app *application) getPokemons(w http.ResponseWriter, r *http.Request) {
 func (app *application) getPokemonByNameOrId(w http.ResponseWriter, r *http.Request) {
 	name := flow.Param(r.Context(), "nameOrId")
 
-	data, err := pokemon.GetSinglePokemon(name)
+	data, err := pokemon.GetSinglePokemon(name, app.db)
 	if err != nil {
 		app.serverError(w, r, err)
 	}
